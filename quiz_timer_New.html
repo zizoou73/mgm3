@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <title>مسابقة الرياضيات التفاعلية</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('images/background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: right;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 20px;
+            position: relative;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background: #4a6baf;
+            color: white;
+            border: none;
+            padding: 12px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        
+        .action-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+            height: 25px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+            transition: width 0.5s;
+            text-align: center;
+            line-height: 25px;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .question-container {
+            padding: 0 15px;
+        }
+        
+        .header {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        
+        .question img {
+            max-width: 100%;
+            height: auto;
+            max-height: 150px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 10px 0;
+            object-fit: contain;
+        }
+        
+        .options {
+            list-style: none;
+            padding: 0;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .options li {
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            border: 2px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .options li:hover {
+            transform: scale(1.03);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #4a6baf;
+        }
+        
+        .options li img {
+            width: 100%;
+            height: 90px;
+            object-fit: contain;
+        }
+        
+        .options li.disabled-option {
+            opacity: 0.3;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+        
+        #timer {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e74c3c;
+            background: #fdeaea;
+            padding: 5px 15px;
+            border-radius: 30px;
+            display: inline-block;
+            text-align: center;
+            margin: 5px 0;
+        }
+        
+        #current-score {
+            font-weight: bold;
+            color: #2c3e50;
+            background: #eaf7ea;
+            padding: 5px 15px;
+            border-radius: 30px;
+            text-align: center;
+            margin: 5px 0;
+        }
+        
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 80%;
+            max-width: 600px;
+        }
+        
+        .correct {
+            color: #4CAF50;
+        }
+        
+        .wrong {
+            color: #e74c3c;
+        }
+        
+        .help-message {
+            color: #e67e22;
+            font-size: 14px;
+            margin-top: 5px;
+            height: 20px;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-bottom: 20px;
+                gap: 10px;
+            }
+            
+            .action-btn {
+                padding: 10px 8px;
+                font-size: 13px;
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .question img {
+                max-height: 180px;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+            
+            .options li img {
+                height: 80px;
+            }
+            
+            #timer, #current-score {
+                font-size: 22px;
+                padding: 5px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">مسابقة الرياضيات التفاعلية 🧮</div>
+        
+        <div class="sidebar">
+            <button class="action-btn" onclick="useFiftyFifty()" id="fiftyBtn">مساعدة 50/50 (-0.5)</button>
+            <button class="action-btn" onclick="skipQuestion()" id="skipBtn">تخطي السؤال (-0.5)</button>
+            <button class="action-btn" onclick="showLeaderboard()">المتصدرون 🏆</button>
+            <div class="help-message" id="helpMessage"></div>
+            
+            <div id="current-score">النقاط: 5</div>
+            <div id="timer">60</div>
+        </div>
+        
+        <div class="question-container">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar">0%</div>
+            </div>
+            
+            <div id="question-counter">السؤال 1 من 10</div>
+            <div class="question" id="question"></div>
+            <ul class="options" id="options"></ul>
+        </div>
+    </div>
+    
+    <div class="message" id="message"></div>
+    
+    <audio id="correct-sound" src="sounds/success.mp3"></audio>
+    <audio id="wrong-sound" src="sounds/error.mp3"></audio>
+    <audio id="thinking-sound" src="sounds/thinking.mp3"></audio>
+    <audio id="tick-sound" src="sounds/tick.mp3"></audio>
+    
+    <script>
+        let allQuestions = [...Array(231)].map((_, i) => ({
+            id: i+1,
+            questionImage: `images/question${i+1}.png`,
+            options: [
+                `images/q${i+1}_answer1.png`,
+                `images/q${i+1}_answer2.png`,
+                `images/q${i+1}_answer3.png`,
+                `images/q${i+1}_answer4.png`
+            ],
+            correctIndex: 0
+        }));
+
+        let questions = [];
+        let availableQuestions = [...allQuestions];
+        let currentQuestion = 0;
+        let helpUsed = false;
+        let timeLeft = 60;
+        let timer;
+        let gameStartTime;
+        let questionStartTime;
+        let disabledOptions = [];
+        
+function initGame() {
+    let usedQuestions = JSON.parse(localStorage.getItem('usedQuestions')) || [];
+    
+    if (usedQuestions.length >= allQuestions.length) {
+        usedQuestions = [];
+        localStorage.removeItem('usedQuestions');
+       allQuestions = shuffleArray([...allQuestions]);
+    }
+
+    const availableQuestions = allQuestions.filter(q => !usedQuestions.includes(q.id));
+    questions = [];
+    const tempAvailable = [...availableQuestions];
+    
+    for (let i = 0; i < Math.min(10, tempAvailable.length); i++) {
+        const randomIndex = Math.floor(Math.random() * tempAvailable.length);
+        questions.push(tempAvailable[randomIndex]);
+        usedQuestions.push(tempAvailable[randomIndex].id);
+        tempAvailable.splice(randomIndex, 1);
+    }
+
+    localStorage.setItem('usedQuestions', JSON.stringify(usedQuestions));
+    localStorage.setItem('quizScore', '5');
+    updateScoreDisplay();
+    gameStartTime = new Date().getTime();
+    loadQuestion();
+}
+        function loadQuestion() {
+            helpUsed = false;
+            disabledOptions = [];
+            document.getElementById("fiftyBtn").disabled = false;
+            document.getElementById("helpMessage").textContent = "";
+            questionStartTime = new Date().getTime();
+            
+            let question = questions[currentQuestion];
+            let shuffledOptions = shuffleArray([...question.options]);
+            let correctIndex = shuffledOptions.indexOf(question.options[question.correctIndex]);
+            
+            document.getElementById("question").innerHTML = `<img src="${question.questionImage}" alt="سؤال">`;
+            
+            let optionsHTML = shuffledOptions.map((option, index) => 
+                `<li onclick="checkAnswer(${index === correctIndex})" class="${disabledOptions.includes(index) ? 'disabled-option' : ''}">
+                    <img src="${option}" alt="إجابة">
+                </li>`
+            ).join("");
+            
+            document.getElementById("options").innerHTML = optionsHTML;
+            updateProgress();
+            startTimer();
+            document.getElementById("thinking-sound").play();
+        }
+        
+        function checkAnswer(isCorrect) {
+            clearInterval(timer);
+            
+            let messageBox = document.getElementById("message");
+            messageBox.style.display = "block";
+            messageBox.innerHTML = isCorrect ? 
+                '<span class="correct">✔ إجابة صحيحة!</span>' : 
+                '<span class="wrong">✖ إجابة خاطئة!</span>';
+            
+            if(isCorrect) {
+                let currentScore = parseFloat(localStorage.getItem('quizScore'));
+                let answerTime = Math.floor((new Date().getTime() - questionStartTime)/1000);
+                let pointsToAdd = answerTime <= 30 ? 2 : 1;
+                
+                localStorage.setItem('quizScore', (currentScore + pointsToAdd).toFixed(1));
+                document.getElementById("correct-sound").play();
+            } else {
+                document.getElementById("wrong-sound").play();
+            }
+            
+            updateScoreDisplay();
+            
+            setTimeout(() => {
+                messageBox.style.display = "none";
+                currentQuestion++;
+                
+                if(currentQuestion < questions.length) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2000);
+        }
+        
+        function endGame() {
+            localStorage.removeItem('usedQuestions');
+            let finalScore = parseFloat(localStorage.getItem('quizScore'));
+            let endTime = new Date().getTime();
+            let totalTime = Math.floor((endTime - gameStartTime)/1000);
+            
+            let playerName = prompt("🎉 أدخل اسمك لحفظ نتيجتك:", localStorage.getItem('lastPlayerName') || "لاعب");
+            if(playerName) {
+                localStorage.setItem('lastPlayerName', playerName);
+                updateLeaderboard(playerName, finalScore, totalTime);
+            }
+            
+            document.getElementById("question").innerHTML = `
+                <h2 style="color:#2c3e50;">انتهت المسابقة!</h2>
+                <p>درجتك النهائية: <strong>${finalScore}</strong> نقطة</p>
+                <p>الوقت المستغرق: <strong>${totalTime}</strong> ثانية</p>
+                <div style="margin-top:20px;">
+                    <button onclick="location.reload()" style="background:#2ecc71; color:white; border:none; padding:12px 25px; border-radius:8px; font-size:18px; cursor:pointer; margin:5px;">
+                        اللعب مرة أخرى
+                    </button>
+                    <button onclick="showLeaderboard()" style="background:#3498db; color:white; border:none; padding:12px 25px; border-radius:8px; font-size:18px; cursor:pointer; margin:5px;">
+                        عرض المتصدرين
+                    </button>
+                </div>
+            `;
+            document.getElementById("options").innerHTML = "";
+        }
+        
+        function updateLeaderboard(name, score, time) {
+            let players = JSON.parse(localStorage.getItem('mathQuizLeaderboard')) || [];
+            name = name.trim() || "لاعب مجهول";
+            
+            const existingIndex = players.findIndex(p => p.name === name);
+            
+            if (existingIndex !== -1) {
+                const player = players[existingIndex];
+                
+                if (score > player.score || (score === player.score && time < player.time)) {
+                    player.score = score;
+                    player.time = time;
+                    player.date = new Date().toLocaleDateString('ar-EG');
+                }
+                
+                player.attempts = (player.attempts || 1) + 1;
+                player.lastAttempt = new Date().toLocaleString('ar-EG');
+            } else {
+                players.push({
+                    name: name,
+                    score: score,
+                    time: time,
+                    date: new Date().toLocaleDateString('ar-EG'),
+                    attempts: 1,
+                    lastAttempt: new Date().toLocaleString('ar-EG')
+                });
+            }
+            
+            players.sort((a, b) => b.score - a.score || a.time - b.time);
+            localStorage.setItem('mathQuizLeaderboard', JSON.stringify(players.slice(0, 10)));
+            
+            const backupData = {
+                leaderboard: players.slice(0, 10),
+                lastUpdate: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(backupData)], { type: 'application/json' });
+            localStorage.setItem('leaderboardBackup', URL.createObjectURL(blob));
+        }
+
+        function showLeaderboard() {
+            let players = JSON.parse(localStorage.getItem('mathQuizLeaderboard')) || [];
+            
+            if (players.length === 0) {
+                const backupUrl = localStorage.getItem('leaderboardBackup');
+                if (backupUrl) {
+                    try {
+                        fetch(backupUrl)
+                            .then(response => response.json())
+                            .then(data => {
+                                players = data.leaderboard || [];
+                                localStorage.setItem('mathQuizLeaderboard', JSON.stringify(players));
+                                displayLeaderboard(players);
+                            })
+                            .catch(() => displayLeaderboard([]));
+                    } catch (e) {
+                        displayLeaderboard([]);
+                    }
+                } else {
+                    displayLeaderboard([]);
+                }
+            } else {
+                displayLeaderboard(players);
+            }
+        }
+
+        function displayLeaderboard(players) {
+            let html = `
+                <div style="max-width: 100%; overflow: auto;">
+                    <h2 style="color: #f39c12; text-align: center; margin-bottom: 20px;">أفضل 10 لاعبين</h2>
+                    <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
+                        <tr style="background: #34495e; color: white;">
+                            <th style="padding: 12px; text-align: center;">الترتيب</th>
+                            <th style="padding: 12px; text-align: right;">الاسم</th>
+                            <th style="padding: 12px; text-align: center;">النقاط</th>
+                            <th style="padding: 12px; text-align: center;">الوقت</th>
+                            <th style="padding: 12px; text-align: center;">المحاولات</th>
+                        </tr>
+            `;
+            
+            if (players.length === 0) {
+                html += `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px; font-size: 18px;">
+                            لا توجد نتائج مسجلة بعد!
+                        </td>
+                    </tr>
+                `;
+            } else {
+                players.forEach((player, index) => {
+                    let medal = "";
+                    if (index === 0) medal = "🥇";
+                    else if (index === 1) medal = "🥈";
+                    else if (index === 2) medal = "🥉";
+                    
+                    html += `
+                        <tr style="border-bottom: 1px solid #eee; ${index % 2 === 0 ? 'background: rgba(255,255,255,0.1);' : ''}">
+                            <td style="padding: 12px; text-align: center; vertical-align: middle;">${medal} ${index + 1}</td>
+                            <td style="padding: 12px; text-align: right; vertical-align: middle;">${player.name}</td>
+                            <td style="padding: 12px; text-align: center; vertical-align: middle;">${player.score}</td>
+                            <td style="padding: 12px; text-align: center; vertical-align: middle;">${player.time} ث</td>
+                            <td style="padding: 12px; text-align: center; vertical-align: middle;">${player.attempts || 1}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                    </table>
+                    <button onclick="document.getElementById('message').style.display='none'" 
+                            style="display: block; margin: 20px auto 0; padding: 10px 25px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">
+                        إغلاق
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById("message").innerHTML = html;
+            document.getElementById("message").style.display = "block";
+        }
+        
+        function useFiftyFifty() {
+            let currentScore = parseFloat(localStorage.getItem('quizScore'));
+            
+            if(currentScore >= 0.5 && !helpUsed) {
+                let question = questions[currentQuestion];
+                let correctOption = question.options[question.correctIndex];
+                let options = Array.from(document.querySelectorAll(".options li img"))
+                    .map((img, index) => ({src: img.src, index}))
+                    .filter(opt => opt.src.endsWith(correctOption) === false);
+                
+                let toDisable = shuffleArray(options).slice(0, 2);
+                
+                toDisable.forEach(opt => {
+                    disabledOptions.push(opt.index);
+                    document.querySelectorAll(".options li")[opt.index].classList.add("disabled-option");
+                });
+                
+                localStorage.setItem('quizScore', (currentScore - 0.5).toFixed(1));
+                helpUsed = true;
+                document.getElementById("fiftyBtn").disabled = true;
+                document.getElementById("helpMessage").textContent = "تم خصم 0.5 نقطة";
+                updateScoreDisplay();
+            } else if(helpUsed) {
+                alert("لقد استخدمت المساعدة بالفعل في هذا السؤال!");
+            } else {
+                alert("ليس لديك نقاط كافية لاستخدام المساعدة!");
+            }
+        }
+        
+function skipQuestion() {
+    let currentScore = parseFloat(localStorage.getItem('quizScore'));
+    
+    if (currentScore >= 0.5) {
+        if (confirm("هل تريد تخطي هذا السؤال؟ (سيتم خصم 0.5 نقطة)")) {
+            // 1. خصم النقاط
+            localStorage.setItem('quizScore', (currentScore - 0.5).toFixed(1));
+            updateScoreDisplay();
+            
+            // 2. إزالة السؤال الحالي من المسابقة
+            const skippedQuestionId = questions[currentQuestion].id;
+            availableQuestions = availableQuestions.filter(q => q.id !== skippedQuestionId);
+            localStorage.setItem('availableQuestions', JSON.stringify(availableQuestions.map(q => q.id)));
+            
+            // 3. استبدال السؤال الحالي بسؤال جديد (مع الحفاظ على الترتيب)
+            if (availableQuestions.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+                questions[currentQuestion] = availableQuestions[randomIndex]; // <-- التغيير هنا
+                loadQuestion(); // إعادة تحميل نفس السؤال بقيمة جديدة
+            } else {
+                endGame();
+            }
+        }
+    } else {
+        alert("ليس لديك نقاط كافية لتخطي السؤال!");
+    }
+}        
+        function startTimer() {
+            clearInterval(timer);
+            timeLeft = 60;
+            updateTimerDisplay();
+            
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if(timeLeft <= 10 && timeLeft > 0) {
+                    let tickSound = document.getElementById("tick-sound");
+                    tickSound.currentTime = 0;
+                    tickSound.playbackRate = timeLeft <= 5 ? 1.5 : 1.0;
+                    tickSound.play();
+                }
+                
+                if(timeLeft <= 0) {
+                    clearInterval(timer);
+                    checkAnswer(false);
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            let timerElement = document.getElementById("timer");
+            timerElement.textContent = timeLeft;
+            
+            if(timeLeft <= 10) {
+                timerElement.style.color = "#e74c3c";
+                timerElement.style.background = "#fdeaea";
+            } else if(timeLeft <= 30) {
+                timerElement.style.color = "#e67e22";
+                timerElement.style.background = "#fef2e8";
+            } else {
+                timerElement.style.color = "#2c3e50";
+                timerElement.style.background = "#eaf7ea";
+            }
+        }
+        
+        function updateProgress() {
+            let progress = (currentQuestion / questions.length) * 100;
+            document.getElementById("progress-bar").style.width = progress + "%";
+            document.getElementById("progress-bar").textContent = Math.round(progress) + "%";
+            document.getElementById("question-counter").textContent = `السؤال ${currentQuestion + 1} من ${questions.length}`;
+        }
+        
+        function updateScoreDisplay() {
+            let score = parseFloat(localStorage.getItem('quizScore')) || 5;
+            document.getElementById("current-score").textContent = `النقاط: ${score.toFixed(1)}`;
+        }
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        window.onload = function() {
+            const backupUrl = localStorage.getItem('leaderboardBackup');
+            if (backupUrl && !localStorage.getItem('mathQuizLeaderboard')) {
+                try {
+                    fetch(backupUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.leaderboard) {
+                                localStorage.setItem('mathQuizLeaderboard', JSON.stringify(data.leaderboard));
+                            }
+                            initGame();
+                        })
+                        .catch(() => initGame());
+                } catch (e) {
+                    initGame();
+                }
+            } else {
+                initGame();
+            }
+        };
+    </script>
+</body>
+</html>
